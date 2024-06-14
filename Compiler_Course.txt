@@ -1,0 +1,292 @@
+/*
+Name: Zakeriye Jamel Muse
+ID: CEP/JJ/0300/14
+*/
+
+
+
+
+4.Write a Lex program to check the given number is prime number or not?
+
+
+
+%{
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+
+int is_prime(int num) {
+    if (num <= 1) return 0;
+    if (num == 2) return 1;
+    if (num % 2 == 0) return 0;
+    for (int i = 3; i <= sqrt(num); i += 2) {
+        if (num % i == 0) return 0;
+    }
+    return 1;
+}
+
+void check_prime(char *str) {
+    int num = atoi(str);
+    if (is_prime(num)) {
+        printf("%d is a prime number.\n", num);
+    } else {
+        printf("%d is not a prime number.\n", num);
+    }
+}
+
+%}
+
+%%
+
+[0-9]+  { check_prime(yytext); }
+
+.|\n    { /* Ignore other characters */ }
+
+%%
+
+int main(int argc, char **argv) {
+    if (argc > 1) {
+        for (int i = 1; i < argc; i++) {
+            yylex();
+        }
+    } else {
+        printf("Please enter a number: ");
+        yylex();
+    }
+    return 0;
+}
+
+int yywrap() {
+    return 1;
+}
+
+
+
+
+1. Write a Lex program to count number of words start with “a”.
+
+
+
+
+
+%{
+#include <stdio.h>
+int count = 0;
+%}
+
+%%
+[aA][a-zA-Z]*  { count++; }
+.|\n           { /* ignore other characters */ }
+%%
+
+int main(int argc, char **argv) {
+    yylex();
+    printf("Number of words starting with 'a': %d\n", count);
+    return 0;
+}
+
+
+
+
+2. Write a Lex program to check no.of websites ending with “.com”
+
+
+
+
+%{
+#include <stdio.h>
+int com_count = 0;
+%}
+
+%%
+
+http:\/\/[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}\.com\b { com_count++; }
+
+%%
+
+int main() {
+    yylex();
+    printf("Number of websites ending with .com: %d\n", com_count);
+    return 0;
+}
+
+int yywrap() {
+    return 1;
+}
+
+
+
+
+
+3. Write a Lex program to check the given Mobile Number is valid or not.
+
+
+
+
+%{
+#include <stdio.h>
+#include <stdlib.h>
+%}
+
+%%
+^[789][0-9]{9}$  { printf("Valid Mobile Number\n"); }
+^[^789].*        { printf("Invalid Mobile Number: Must start with 7, 8, or 9\n"); }
+^[789][0-9]{0,8}$ { printf("Invalid Mobile Number: Must be exactly 10 digits\n"); }
+^[789][0-9]{10,}$ { printf("Invalid Mobile Number: Must be exactly 10 digits\n"); }
+.                { printf("Invalid Mobile Number: Contains invalid characters\n"); }
+%%
+
+int main(int argc, char **argv) {
+    if (argc > 1) {
+        yyin = fopen(argv[1], "r");
+        if (!yyin) {
+            perror("fopen");
+            exit(1);
+        }
+    } else {
+        yyin = stdin;
+    }
+
+    yylex();
+
+    return 0;
+}
+
+int yywrap() {
+    return 1;
+}
+
+
+
+
+
+4. Write a Lex program to check whether the given number is even or odd.
+
+
+
+%{
+#include <stdio.h>
+%}
+
+%%
+
+[0-9]+ {
+    int num = atoi(yytext);
+    if (num % 2 == 0) {
+        printf("%d is even\n", num);
+    } else {
+        printf("%d is odd\n", num);
+    }
+}
+
+\n { /* Ignore new lines */ }
+
+. { /* Ignore any other characters */ }
+
+%%
+
+int main() {
+    yylex();
+    return 0;
+}
+
+int yywrap() {
+    return 1;
+
+}
+
+
+
+
+
+5. Write a Lex program to convert decimal to binary number.
+
+
+
+
+
+%{
+#include <stdio.h>
+#include <stdlib.h>
+
+// Function to convert decimal to binary
+char* decimalToBinary(int n) {
+    int c, d, count;
+    char *pointer;
+
+    count = 0;
+    pointer = (char*)malloc(32+1);
+
+    if (pointer == NULL)
+        exit(EXIT_FAILURE);
+
+    for (c = 31; c >= 0; c--) {
+        d = n >> c;
+
+        if (d & 1)
+            *(pointer+count) = 1 + '0';
+        else
+            *(pointer+count) = 0 + '0';
+
+        count++;
+    }
+    *(pointer+count) = '\0';
+
+    return pointer;
+}
+%}
+
+%%
+[0-9]+  {
+            int decimalValue = atoi(yytext);
+            char* binaryValue = decimalToBinary(decimalValue);
+            printf("Decimal: %s, Binary: %s\n", yytext, binaryValue);
+            free(binaryValue);
+         }
+.|\n    { /* Ignore other characters */ }
+%%
+
+int main(int argc, char **argv) {
+    yylex();
+    return 0;
+}
+
+
+
+
+
+
+
+6. Write a Lex program to do arithmetic operations “+,-,*,^,/”
+
+
+
+
+
+
+%{
+#include <stdio.h>
+#include "y.tab.h"
+%}
+
+digit   [0-9]
+letter  [a-zA-Z]
+%%
+"+"             { return PLUS; }
+"-"             { return MINUS; }
+"*"             { return MULT; }
+"/"             { return DIV; }
+"^"             { return POW; }
+"("             { return LPAREN; }
+")"             { return RPAREN; }
+{digit}+        { yylval.ival = atoi(yytext); return NUMBER; }
+{letter}{letter}* { yylval.sval = strdup(yytext); return IDENTIFIER; }
+[ \t\n]         ; /* ignore whitespace */
+.               { printf("Unexpected character: %s\n", yytext); return yytext[0]; }
+%%
+int yywrap(void) {
+    return 1;
+}
+
+
+
